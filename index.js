@@ -44,6 +44,15 @@ app.use((req, res, next) => {
 });
 
 // Helper functions
+
+// basic password generator
+const genPass = () => {
+	return Array.from({ length: 24 }, () => {
+		const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
+		return charset[Math.floor(Math.random() * charset.length)];
+	}).join("");
+}
+
 // Create user
 const createUser = (username, password, authLevel) => {
 	return new Promise((resolve, reject) => {
@@ -457,7 +466,7 @@ app.post("/user/delete", isAuthenticated, (req, res) => {
 });
 
 app.post("/user/update", isAuthenticated, (req, res) => {
-// TODO: Allow user to update their own password
+	// TODO: Allow user to update their own password
 });
 
 app.get("/admin/createUser", isAuthenticated, (req, res) => {
@@ -546,18 +555,23 @@ app.get("/admin/listUsers", isAuthenticated, (req, res) => {
 	});
 });
 
-
-//var usersToBeMade = ["cludlow", "jjones", "rsasongko", "aszeremeta", "epatterson"]
-
 app.listen(port, () => {
 	console.log(`Server listening on port ${port}`);
-	// usersToBeMade.forEach((name) => {
-	// 	// Generate a random password, 24 characters long, containing uppercase, lowercase, numeric, and symbols
-	// 	let password = Array.from({ length: 24 }, () => {
-	// 		const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
-	// 		return charset[Math.floor(Math.random() * charset.length)];
-	// 	}).join("");
-	// 	createUser(name, password, 0)
-	// 	console.log(`Ticket system login for ${name} is ${password}`);
-	// })
+	// If users table is empty create an admin user
+	db.get("SELECT * FROM users", (err, row) => {
+		if (err) {
+			console.error(err);
+			return;
+		}
+		if (!row) {
+			let pass = genPass();
+			createUser("admin", pass, 1)
+				.then(() => {
+					console.log(`Admin user created. Username: admin, Password: ${pass}`);
+				})
+				.catch((err) => {
+					console.error(err);
+				});
+		}
+	});
 });

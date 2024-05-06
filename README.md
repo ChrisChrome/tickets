@@ -32,7 +32,7 @@ A super basic, full of issues ticketing system for me to keep track of things I 
 4. Run `node .` to start the server. You can also use a process manager like pm2 to keep the server running.
 
 - You can now reach the server at `http://localhost:3000` (or whatever port you specified in the `config.json` file).
-- Default administrator login is `admin` with password `admin`. You should change this immediately.
+- Default administrator login is `admin`, the password will be generated and printed to the console.
 
 ## TODO
 
