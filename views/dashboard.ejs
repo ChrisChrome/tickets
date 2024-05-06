@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title>Ticket Dashboard</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- Bootstrap CSS -->
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css" rel="stylesheet">
+
+	<!-- Bootswatch Darkly theme -->
+	<link href="https://stackpath.bootstrapcdn.com/bootswatch/latest/darkly/bootstrap.min.css" rel="stylesheet">
+</head>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/latest/js/bootstrap.min.js"></script>
+
+<body>
+	<nav class="navbar navbar-dark bg-dark justify-content-between">
+		<h1>Dashboard</h1>
+		<div class="text-right">
+		<p style="display: inline; font-size: larger; margin-right: 5px;">Welcome, <%= username %></p>
+		<button onclick="window.location = '/ticket/create'" style="display: inline;" class="btn btn-info">
+			Create
+		</button>
+		<button onclick="window.location = '/logout'" style="display: inline;" class="btn btn-danger">
+			Logout
+		</button>
+		</div>
+	</nav>
+	<div>
+		<table class="table table-striped table-bordered table-dark">
+			<thead class="thead-dark">
+				<tr>
+					<th>Title</th>
+					<th>Description</th>
+					<th>Status</th>
+					<th>User</th>
+					<th>Priority</th>
+					<th>Created</th>
+					<th>Last Updated</th>
+					<th>Message Count</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				<% for (let i=0; i < tickets.length; i++) { %>
+					<tr>
+						<td></i>
+							<%= tickets[i].title %>
+						</td>
+						<td>
+							<%= tickets[i].description %>
+						</td>
+						<td>
+							<% if (tickets[i].status===0) { %>
+								Open
+								<% } else if (tickets[i].status===1) { %>
+									In Progress
+									<% } else if (tickets[i].status===2) { %>
+										Completed
+										<% } else { %>
+											Unknown
+											<% } %>
+						</td>
+						<td>
+							<%= JSON.parse(tickets[i].user).username %>
+								<% if (JSON.parse(tickets[i].user).authLevel===1) { %><span style="color: red;">
+										(Admin)</span>
+									<% } %>
+						</td>
+						<td>
+							<% switch (tickets[i].priority) { case 5: %>High<% break; case 4: %>Medium<% break; case 3:
+										%>Normal<% break; case 2: %>Very Low<% break; case 1: %>Minimal<% break;
+													default: %>Unknown<% break; } %>
+						</td>
+						<td>
+							<%= new Date(tickets[i].createdTimestamp).toLocaleString() %>
+						</td>
+						<td>
+							<% if (tickets[i].updatedTimestamp) { %>
+								<%= new Date(tickets[i].updatedTimestamp).toLocaleString() %>
+									<% } else { %>Never<% } %>
+						</td>
+						<td>
+							<%= JSON.parse(tickets[i].messages).length %>
+						</td>
+						<td>
+							<button class="btn btn-primary"
+								onclick="window.location.href='/ticket/<%= tickets[i].id %>'">Link</i></button>
+							<form method="POST" action="/ticket/<%= tickets[i].id %>/delete" style="display: inline;">
+								<button type="submit" class="btn btn-danger">Delete</i></button>
+							</form>
+						</td>
+						</td>
+					</tr>
+					</tr>
+					<% } %>
+			</tbody>
+		</table>
+	</div>
+</body>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/latest/js/bootstrap.min.js"></script>
+
+</html>

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- Bootstrap CSS -->
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootswatch Darkly theme -->
+	<link href="https://stackpath.bootstrapcdn.com/bootswatch/latest/darkly/bootstrap.min.css" rel="stylesheet">
+	<title>Ticket #<%= ticket.id %>
+	</title>
+</head>
+
+<body>
+	<nav class="navbar navbar-dark bg-dark">
+		<a class="navbar-brand" href="/">Home</a>
+	</nav>
+	<div class="container mt-4">
+		<div class="card">
+			<div class="card-header d-flex justify-content-between">
+				<h1>Ticket Details</h1>
+				<div class="text-right">
+					<!--Ticket options, delete (post to /ticket/id/delete) dropdown to change status (post to /ticket/id/status?status=X) and change priority (post to /ticket/id/priority?priority=X)-->
+					<form action="/ticket/<%= ticket.id %>/status" method="POST" style="display: inline;">
+						<label class="form-label mt-4">Priority: </label>
+						<select class="form-select" name="status" onchange="this.form.submit()">
+							<option value="0" <% if (ticket.status===0) { %>selected<% } %>>Open</option>
+							<option value="1" <% if (ticket.status===1) { %>selected<% } %>>In Progress</option>
+							<option value="2" <% if (ticket.status===2) { %>selected<% } %>>Completed</option>
+						</select>
+					</form>
+					<form action="/ticket/<%= ticket.id %>/priority" method="POST" style="display: inline;">
+						<label class="form-label mt-4">Priority: </label>
+						<select class="form-select" name="priority" onchange="this.form.submit()">
+							<option value="5" <% if (ticket.priority===5) { %>selected<% } %>>Very High</option>
+							<option value="4" <% if (ticket.priority===4) { %>selected<% } %>>High</option>
+							<option value="3" <% if (ticket.priority===3) { %>selected<% } %>>Normal</option>
+							<option value="2" <% if (ticket.priority===2) { %>selected<% } %>>Low</option>
+							<option value="1" <% if (ticket.priority===1) { %>selected<% } %>>Minimal</option>
+						</select>
+					</form>
+					<form action="/ticket/<%= ticket.id %>/delete" method="POST" style="display: inline;">
+						<button type="submit" class="btn btn-danger">
+							Delete
+						</button>
+					</form>
+				</div>
+			</div>
+			<div class="card-body">
+				<h5 class="card-title">Ticket #<%= ticket.id %>
+				</h5>
+				<p class="card-text">Creator: <%= ticket.user.username %>
+						<% if (ticket.user.authLevel===1) { %><span style="color: red;"> (Admin)</span>
+							<% } %>
+				</p>
+				<p class="card-text">Created: <%= new Date(ticket.createdTimestamp).toLocaleString() %></p>
+				<p class="card-text">Updated: <%= ticket.updatedTimestamp ? new Date(ticket.updatedTimestamp).toLocaleString() : 'N/A' %></p>
+				<p class="card-text">Description: <%= ticket.description %>
+				</p>
+				<p class="card-text">Status: <% switch (ticket.priority) { case 5: %>Very High<% break; case 4: %>High<%
+								break; case 3: %>Normal<% break; case 2: %>Low<% break; case 1: %>Minimal<% break;
+											default: %>Unknown<% break; } %>
+				</p>
+				<p class="card-text">Priority: <% if (ticket.status===0) { %>
+						Open
+						<% } else if (ticket.status===1) { %>
+							In Progress
+							<% } else if (ticket.status===2) { %>
+								Completed
+								<% } else { %>
+									Unknown
+									<% } %>
+				</p>
+			</div>
+		</div>
+	</div>
+	<!-- Small form to post a new message-->
+	<div class="container mt-4">
+		<div class="card">
+			<div class="card-header d-flex justify-content-between">
+				<p class="card-text text-left">New Message</p>
+			</div>
+			<div class="card-body">
+				<form action="/ticket/<%= ticket.id %>/add-message" method="POST">
+					<div class="form-group">
+						<textarea class="form-control" name="message" rows="3"
+							placeholder="Enter your message"></textarea>
+					</div>
+					<button type="submit" class="btn btn-primary">Post</button>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- Messages -->
+	<div class="container mt-4">
+		<% ticket.messages.forEach(message=> { %>
+			<div class="card">
+				<div class="card-header d-flex justify-content-between">
+					<p class="card-text text-left">
+						<%= ticket.user.username %>
+						<% if (ticket.user.authLevel===1) { %><span style="color: red;"> (Admin)</span>
+							<% } %>
+					</p>
+					<p class="card-text text-right">
+						<%= new Date(message.timestamp).toLocaleString() %>
+					</p>
+				</div>
+				<div class="card-body">
+					<p class="card-text">
+						<%= message.message %>
+					</p>
+				</div>
+			</div>
+			<% }) %>
+	</div>
+</body>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/latest/js/bootstrap.min.js"></script>
+
+</html>

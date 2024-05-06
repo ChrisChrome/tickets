@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<!-- Bootstrap CSS -->
+	<link href="https://stackpath.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css" rel="stylesheet">
+	<!-- Bootswatch Darkly theme -->
+	<link href="https://stackpath.bootstrapcdn.com/bootswatch/latest/darkly/bootstrap.min.css" rel="stylesheet">
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Create Ticket</title>
+	<style>
+	body {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 100vh;
+			/* 100% of the viewport height */
+			margin: 0;
+		}
+
+		.centered-div {
+			/* Additional styling if needed */
+			max-width: 1000px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="card centered-div">
+		<div class="card-body">
+			<form action="/ticket/create" method="POST">
+				<div class="card mx-auto my-auto">
+					<div class="card-body">
+						<form action="/ticket/create" method="POST">
+							<div class="form-group">
+								<label for="title">Title:</label>
+								<input type="text" class="form-control" id="title" name="title" required>
+							</div>
+							<div class="form-group">
+								<label for="description">Short Description:</label>
+								<textarea class="form-control" id="description" name="description" required></textarea>
+							</div>
+							<div class="form-group">
+								<label for="priority">Priority:</label>
+								<select class="form-control" id="priority" name="priority" required>
+									<option value="0">0 - Minimum</option>
+									<option value="1">1 - Low</option>
+									<option value="3" selected>3 - Normal</option>
+									<option value="4">4 - High</option>
+									<option value="5">5 - Maximum</option>
+								</select>
+							</div>
+							<button type="submit" class="btn btn-primary">Create Ticket</button>
+							<button onclick="window.location = '/dashboard'" class="btn btn-danger" style="display:inline;">Cancel</button>
+						</form>
+					</div>
+				</div>
+		</div>
+	</div>
+</body>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/latest/js/bootstrap.min.js"></script>
+
+</html>
