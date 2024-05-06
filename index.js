@@ -55,7 +55,6 @@ const ntfyPublish = (data) => {
 		method: 'POST',
 		body: JSON.stringify(data)
 	})
-	console.log(data)
 }
 
 // Create user
@@ -428,7 +427,7 @@ app.post("/ticket/:id/:action", isAuthenticated, (req, res) => {
 							console.error(err);
 							return res.status(500).send("Internal Server Error");
 						}
-						if(config.ntfy) ntfyPublish({title: `Ticket ${req.params.id} priority changed`, message: `Priority changed to ${req.body.priority}`, tags: [req.session.userData.username, new Date(Date.now()).toISOString()]});
+						if(config.ntfy) ntfyPublish({title: `Ticket ${req.params.id} priority changed`, message: `Priority changed to ${req.body.priority}`, tags: [req.session.userData.username, new Date(Date.now()).toISOString()], priority: Number(req.body.priority)});
 						res.redirect(`/ticket/${req.params.id}`);
 					});
 				});
