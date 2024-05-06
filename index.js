@@ -7,8 +7,6 @@ const bcrypt = require("bcrypt");
 const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("database.db");
 const SQLiteStore = require('connect-sqlite3')(session);
-const ntfy = require("ntfy");
-
 
 
 
@@ -47,6 +45,17 @@ const genPass = () => {
 		const charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?";
 		return charset[Math.floor(Math.random() * charset.length)];
 	}).join("");
+}
+
+// NTFY
+const ntfyPublish = (data) => {
+	const fetch = require('node-fetch');
+	data.topic = config.ntfy.topic;
+	fetch(config.ntfy.server, {
+		method: 'POST',
+		body: JSON.stringify(data)
+	})
+	console.log(data)
 }
 
 // Create user
@@ -164,7 +173,7 @@ const createTicket = (title, description, status, user, priority) => {
 					reject(err);
 					return;
 				}
-				if (config.ntfy) ntfy.publish({server: config.ntfy.server, authorization: config.ntfy.authorization, topic: config.ntfy.topic, title: `New Ticket`, message: `${title}: ${description}`, priority, tags: [user, new Date(timestamp).toISOString()]});
+				if (config.ntfy) ntfyPublish({title: `New Ticket`, message: `${title}: ${description}`, priority: Number(priority), tags: [user.username, new Date(timestamp).toISOString()]});
 				resolve(this.lastID);
 			}
 		);
@@ -180,7 +189,7 @@ const deleteTicket = (id) => {
 				reject(err);
 				return;
 			}
-			if (config.ntfy) ntfy.publish({server: config.ntfy.server, authorization: config.ntfy.authorization, topic: config.ntfy.topic, title: `Ticket Deleted`, message: `Ticket ${id} has been deleted`, tags: [new Date().toISOString()]});
+			if (config.ntfy) ntfyPublish({title: `Ticket Deleted`, message: `Ticket ${id} has been deleted`, tags: [new Date().toISOString()]});
 			resolve();
 		});
 	});
@@ -350,13 +359,14 @@ app.post("/ticket/:id/:action", isAuthenticated, (req, res) => {
 		switch (req.params.action) {
 			case "delete":
 				// Delete ticket
-				db.run("DELETE FROM tickets WHERE id = ?", [req.params.id], (err) => {
-					if (err) {
+				deleteTicket(req.params.id)
+					.then(() => {
+						res.redirect("/dashboard");
+					})
+					.catch((err) => {
 						console.error(err);
-						return res.status(500).send("Internal Server Error");
-					}
-					res.redirect("/dashboard");
-				});
+						res.status(500).send("Internal Server Error");
+					});
 				break;
 			case "add-message":
 				// Add message
@@ -373,7 +383,7 @@ app.post("/ticket/:id/:action", isAuthenticated, (req, res) => {
 							console.error(err);
 							return res.status(500).send("Internal Server Error");
 						}
-						if (config.ntfy) ntfy.publish({server: config.ntfy.server, authorization: config.ntfy.authorization, topic: config.ntfy.topic, title: `New Message on ticket ${req.params.id}`, message: `${req.body.message}`, tags: [req.session.userData.username, new Date(timestamp).toISOString()]});
+						if (config.ntfy) ntfyPublish({title: `New Message on ticket ${req.params.id}`, message: `${req.body.message}`, tags: [req.session.userData.username, new Date(timestamp).toISOString()]});
 						res.redirect(`/ticket/${req.params.id}`);
 					});
 				});
@@ -395,7 +405,7 @@ app.post("/ticket/:id/:action", isAuthenticated, (req, res) => {
 							console.error(err);
 							return res.status(500).send("Internal Server Error");
 						}
-						if(config.ntfy) ntfy.publish({server: config.ntfy.server, authorization: config.ntfy.authorization, topic: config.ntfy.topic, title: `Ticket ${req.params.id} status changed`, message: `Status changed to ${req.body.status}`, tags: [req.session.userData.username, new Date(Date.now()).toISOString()]});
+						if(config.ntfy) ntfyPublish({title: `Ticket ${req.params.id} status changed`, message: `Status changed to ${req.body.status}`, tags: [req.session.userData.username, new Date(Date.now()).toISOString()]});
 						res.redirect(`/ticket/${req.params.id}`);
 					});
 				});
@@ -418,7 +428,7 @@ app.post("/ticket/:id/:action", isAuthenticated, (req, res) => {
 							console.error(err);
 							return res.status(500).send("Internal Server Error");
 						}
-						if(config.ntfy) ntfy.publish({server: config.ntfy.server, authorization: config.ntfy.authorization, topic: config.ntfy.topic, title: `Ticket ${req.params.id} priority changed`, message: `Priority changed to ${req.body.priority}`, tags: [req.session.userData.username, new Date(Date.now()).toISOString()]});
+						if(config.ntfy) ntfyPublish({title: `Ticket ${req.params.id} priority changed`, message: `Priority changed to ${req.body.priority}`, tags: [req.session.userData.username, new Date(Date.now()).toISOString()]});
 						res.redirect(`/ticket/${req.params.id}`);
 					});
 				});
