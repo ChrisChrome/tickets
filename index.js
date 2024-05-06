@@ -8,13 +8,7 @@ const sqlite3 = require("sqlite3").verbose();
 const db = new sqlite3.Database("database.db");
 const SQLiteStore = require('connect-sqlite3')(session);
 
-// Init DB if new
-db.run( // Create users table
-	"CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, authLevel INTEGER)"
-);
-db.run( // Create tickets table
-	"CREATE TABLE IF NOT EXISTS tickets (id INTEGER PRIMARY KEY, title TEXT, description TEXT, status INTEGER, user INTEGER, priority INTEGER(1), createdTimestamp INTEGER, updatedTimestamp INTEGER, messages TEXT, FOREIGN KEY(user) REFERENCES users(id))"
-);
+
 
 // Middleware
 app.use(express.json());
@@ -555,23 +549,48 @@ app.get("/admin/listUsers", isAuthenticated, (req, res) => {
 	});
 });
 
-app.listen(port, () => {
-	console.log(`Server listening on port ${port}`);
-	// If users table is empty create an admin user
-	db.get("SELECT * FROM users", (err, row) => {
-		if (err) {
-			console.error(err);
-			return;
-		}
-		if (!row) {
-			let pass = genPass();
-			createUser("admin", pass, 1)
-				.then(() => {
-					console.log(`Admin user created. Username: admin, Password: ${pass}`);
-				})
-				.catch((err) => {
-					console.error(err);
-				});
-		}
+(async () => {
+	await new Promise((resolve, reject) => {
+		db.run(
+			// Create users table
+			"CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT, authLevel INTEGER)",
+			(err) => {
+				if (err) reject(err);
+				else resolve();
+			}
+		);
 	});
-});
+
+	await new Promise((resolve, reject) => {
+		db.run(
+			// Create tickets table
+			"CREATE TABLE IF NOT EXISTS tickets (id INTEGER PRIMARY KEY, title TEXT, description TEXT, status INTEGER, user INTEGER, priority INTEGER(1), createdTimestamp INTEGER, updatedTimestamp INTEGER, messages TEXT, FOREIGN KEY(user) REFERENCES users(id))",
+			(err) => {
+				if (err) reject(err);
+				else resolve();
+			}
+		);
+	});
+
+	// Start the server
+	app.listen(port, () => {
+		console.log(`Server listening on port ${port}`);
+		// If users table is empty create an admin user
+		db.get("SELECT * FROM users", (err, row) => {
+			if (err) {
+				console.error(err);
+				return;
+			}
+			if (!row) {
+				let pass = genPass();
+				createUser("admin", pass, 1)
+					.then(() => {
+						console.log(`Admin user created. Username: admin, Password: ${pass}`);
+					})
+					.catch((err) => {
+						console.error(err);
+					});
+			}
+		});
+	});
+})();
